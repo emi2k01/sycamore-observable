@@ -7,7 +7,7 @@ pub fn derive_observable(input: TokenStream) -> TokenStream {
     let DeriveInput { ident, data, .. } = parse_macro_input!(input);
 
     let observable_struct = match data {
-        Data::Struct(data) => gen_struct(&ident, &data),
+        Data::Struct(data) => process_struct(&ident, &data),
         _ => todo!()
     };
 
@@ -20,26 +20,35 @@ pub fn derive_observable(input: TokenStream) -> TokenStream {
 
 struct ObservableStruct {
     original_ident: Ident,
+    tuple_like: bool,
     fields: Vec<ObservableField>,
 }
 
 impl ToTokens for ObservableStruct {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let ObservableStruct { original_ident, fields } = self;
+        let ObservableStruct { original_ident, fields, tuple_like } = self;
 
-        let observable_ident = format_ident!("__Sycamore{}Observable", original_ident);
+        let observable_ident = format_ident!("{}Observable", original_ident);
 
-        quote! {
-            struct #observable_ident {
-                #(#fields),*
-            }
-        }.to_tokens(tokens);
+        if *tuple_like {
+            quote! {
+                struct #observable_ident(#(#fields)*);
+            }.to_tokens(tokens);
+        } else {
+            quote! {
+                struct #observable_ident {
+                    #(#fields)*
+                }
+            }.to_tokens(tokens);
+        }
+
     }
 }
 
-fn gen_struct(ident: &Ident, data_struct: &DataStruct) -> ObservableStruct {
+fn process_struct(ident: &Ident, data_struct: &DataStruct) -> ObservableStruct {
     ObservableStruct {
         original_ident: ident.clone(),
+        tuple_like: matches!(data_struct.fields, Fields::Unnamed(_) | Fields::Unit),
         fields: process_fields(&data_struct.fields),
     }
 }
@@ -57,11 +66,11 @@ impl ToTokens for ObservableField {
 
         if let Some(ident) = ident {
             quote! {
-                #ident: #observable_type
+                #ident: #observable_type,
             }.to_tokens(tokens);
         } else {
             quote! {
-                (#observable_type)
+                #observable_type,
             }.to_tokens(tokens);
         }
     }
