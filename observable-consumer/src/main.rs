@@ -138,35 +138,33 @@ impl Observable for Relationship {
     }
 }
 
-impl Observable for Person {
-    type Reflection = PersonObservable;
-
-    fn into_observable(self) -> Self::Reflection {
-        Self::Reflection {
-            name: Signal::new(<String as Observable>::into_observable(self.name)),
-            age: Signal::new(<i32 as Observable>::into_observable(self.age)),
-            parents: (
-                Signal::new(<Box<Person> as Observable>::into_observable(self.parents.0)),
-                Signal::new(<Box<Person> as Observable>::into_observable(self.parents.1)),
-            ),
-            children: Signal::new(<Vec<Person> as Observable>::into_observable(self.children)),
-            sex: Signal::new(<Sex as Observable>::into_observable(self.sex)),
-            relationships: Signal::new(
-                <HashMap<RelationshipKind, Vec<Person>> as Observable>::into_observable(
-                    self.relationships,
-                ),
-            ),
-        }
-    }
-
-    fn from_observable(observable: Self::Reflection) -> Self {
-        // no way I'm writing this. I got tired
-        todo!()
-    }
-}
+//impl Observable for Person {
+//    type Reflection = PersonObservable;
+//
+//    fn into_observable(self) -> Self::Reflection {
+//        Self::Reflection {
+//            name: Signal::new(<String as Observable>::into_observable(self.name)),
+//            age: Signal::new(<i32 as Observable>::into_observable(self.age)),
+//            parents: (
+//                Signal::new(<Box<Person> as Observable>::into_observable(self.parents.0)),
+//                Signal::new(<Box<Person> as Observable>::into_observable(self.parents.1)),
+//            ),
+//            children: Signal::new(<Vec<Person> as Observable>::into_observable(self.children)),
+//            sex: Signal::new(<Sex as Observable>::into_observable(self.sex)),
+//            relationships: Signal::new(
+//                <HashMap<RelationshipKind, Vec<Person>> as Observable>::into_observable(
+//                    self.relationships,
+//                ),
+//            ),
+//        }
+//    }
+//
+//    fn from_observable(observable: Self::Reflection) -> Self {
+//        // no way I'm writing this. I got tired
+//        todo!()
+//    }
+//}
 
 fn main() {
-    let x = Box::new(10);
-    let x_observable: <Box<i32>>::Reflection = todo!();
     println!("Hello, world!");
 }
